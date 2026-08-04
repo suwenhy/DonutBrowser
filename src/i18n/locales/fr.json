@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "Conserver en RAM la copie déchiffrée des profils protégés par mot de passe entre les lancements pour un démarrage plus rapide. La copie sur disque reste chiffrée dans tous les cas."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "Rechercher des profils...",
     "clearSearch": "Effacer la recherche",
     "moreActions": "Plus d'actions",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "Profils",
+    "stats": {
+      "total": "{{count}} profils",
+      "running": "{{count}} actifs",
+      "proxied": "{{count}} avec proxy"
+    },
     "empty": "Aucun profil pour l'instant",
     "emptyDescription": "Créez votre premier profil de navigateur pour commencer.",
     "createFirst": "Créer un profil",
     "noResults": "Aucun profil trouvé",
     "noResultsDescription": "Aucun profil ne correspond à vos critères de recherche.",
     "table": {
+      "id": "ID",
+      "platform": "Plateforme",
+      "neverOpened": "Jamais",
       "name": "Nom",
       "browser": "Navigateur",
       "status": "Statut",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "Impossible de modifier le profil pendant la mise à jour du navigateur"
     },
     "actions": {
+      "open": "Ouvrir",
       "launch": "Lancer",
       "stop": "Arrêter",
       "edit": "Modifier",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "Général",
+      "proxy": "Proxy",
+      "fingerprint": "Empreinte",
+      "advanced": "Avancé",
+      "overview": "Aperçu du profil",
+      "overviewDescription": "Résumé en direct de l’identité du navigateur.",
+      "operatingSystem": "Système d’exploitation",
+      "unnamed": "Profil sans nom",
+      "generatedAtLaunch": "Générée au lancement"
+    },
     "title": "Créer un nouveau profil",
     "configureTitle": "Créer un nouveau profil {{browser}}",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "La version {{requested}} de Wayfern n'est pas disponible au téléchargement. La version actuelle est {{current}}."
   },
   "rail": {
+    "localWorkspace": "Espace de travail local",
+    "sections": {
+      "browser": "Gestion des navigateurs",
+      "tools": "Automatisation et outils"
+    },
     "profiles": "Profils",
     "extensions": "Extensions",
     "groups": "Groupes",

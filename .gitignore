@@ -20,6 +20,10 @@
 # production
 /build
 
+# local build toolchains and packaged desktop artifacts
+/.toolchains/
+/outputs/
+
 # misc
 **/*.DS_Store
 .env.local

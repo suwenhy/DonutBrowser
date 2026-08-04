@@ -434,7 +434,6 @@ export function ProfileInfoDialog({
       onClick: () => {
         handleAction(() => onConfigureWayfern?.(profile));
       },
-      // Viewing and editing fingerprints both require an active paid plan.
       disabled: isDisabled || !crossOsUnlocked,
       proBadge: !crossOsUnlocked,
       runningBadge: isRunning,

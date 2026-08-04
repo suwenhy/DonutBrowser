@@ -32,6 +32,7 @@ import {
 } from "@/components/profile-password-dialog";
 import { ProfileSelectorDialog } from "@/components/profile-selector-dialog";
 import { ProfileSyncDialog } from "@/components/profile-sync-dialog";
+import { ProfilesToolbar } from "@/components/profiles-toolbar";
 import { ProxyAssignmentDialog } from "@/components/proxy-assignment-dialog";
 import { ProxyManagementDialog } from "@/components/proxy-management-dialog";
 import { type AppPage, RailNav } from "@/components/rail-nav";
@@ -188,17 +189,9 @@ export default function Home() {
     }
   }, [isOnbordaVisible, currentStep, profiles.length, setCurrentStep]);
 
-  const {
-    groups: groupsData,
-    isLoading: groupsLoading,
-    error: groupsError,
-  } = useGroupEvents();
+  const { groups: groupsData, error: groupsError } = useGroupEvents();
 
-  const {
-    storedProxies,
-    isLoading: proxiesLoading,
-    error: proxiesError,
-  } = useProxyEvents();
+  const { storedProxies, error: proxiesError } = useProxyEvents();
 
   const { vpnConfigs } = useVpnEvents();
 
@@ -219,13 +212,12 @@ export default function Home() {
     checkTrialStatus,
   } = useCommercialTrial();
 
-  // Cloud auth for cross-OS unlock
+  // Local capabilities are available without an account. Cloud auth is only
+  // used for hosted backup and team collaboration.
   const { user: cloudUser } = useCloudAuth();
-  const crossOsUnlocked = getEntitlements(cloudUser).crossOsFingerprints;
-  // Bulk run/stop is a paid (browser automation) feature, matching the
-  // /v1/profiles/batch/run API gate. Free/starter users see the bulk Run/Stop
-  // actions disabled with a Pro badge.
-  const automationUnlocked = getEntitlements(cloudUser).browserAutomation;
+  const entitlements = getEntitlements(cloudUser);
+  const crossOsUnlocked = entitlements.crossOsFingerprints;
+  const automationUnlocked = entitlements.browserAutomation;
 
   const [selfHostedSyncConfigured, setSelfHostedSyncConfigured] =
     useState(false);
@@ -236,13 +228,13 @@ export default function Home() {
       const hasConfig = Boolean(
         settings.sync_server_url && settings.sync_token,
       );
-      setSelfHostedSyncConfigured(hasConfig && !cloudUser);
+      setSelfHostedSyncConfigured(hasConfig);
     } catch {
       setSelfHostedSyncConfigured(false);
     }
-  }, [cloudUser]);
+  }, []);
 
-  const syncUnlocked = crossOsUnlocked || selfHostedSyncConfigured;
+  const syncUnlocked = entitlements.cloudBackup || selfHostedSyncConfigured;
 
   const [currentPage, setCurrentPage] = useState<AppPage>("profiles");
   const [accountDialogOpen, setAccountDialogOpen] = useState(false);
@@ -1556,9 +1548,6 @@ export default function Home() {
     return filtered;
   }, [profiles, selectedGroupId, searchQuery]);
 
-  // Update loading states
-  const isLoading = profilesLoading || groupsLoading || proxiesLoading;
-
   const subPageTitle =
     currentPage === "profiles"
       ? undefined
@@ -1580,53 +1569,79 @@ export default function Home() {
         pageTitle={subPageTitle}
       />
       <div className="flex min-h-0 flex-1">
-        <RailNav currentPage={currentPage} onNavigate={handleRailNavigate} />
+        <RailNav
+          currentPage={currentPage}
+          onNavigate={handleRailNavigate}
+          onCreateProfile={() => setCreateProfileDialogOpen(true)}
+        />
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           {currentPage === "profiles" && (
-            <div className="flex min-h-0 flex-1 flex-col px-3 pt-2.5">
-              {isLoading && groupsData.length === 0 ? null : null}
-              <ProfilesDataTable
-                profiles={filteredProfiles}
-                infoDialogProfile={profileInfoDialog}
-                onInfoDialogProfileChange={setProfileInfoDialog}
-                onLaunchProfile={launchProfile}
-                onKillProfile={handleKillProfile}
-                onCloneProfile={handleCloneProfile}
-                onSetPassword={handleSetPassword}
-                onChangePassword={handleChangePassword}
-                onRemovePassword={handleRemovePassword}
-                onDeleteProfile={handleDeleteProfile}
-                onRenameProfile={handleRenameProfile}
-                onConfigureWayfern={handleConfigureWayfern}
-                onCopyCookiesToProfile={handleCopyCookiesToProfile}
-                onOpenCookieManagement={handleOpenCookieManagement}
-                runningProfiles={runningProfiles}
-                isUpdating={isUpdating}
-                onDeleteSelectedProfiles={handleDeleteSelectedProfiles}
-                onAssignProfilesToGroup={handleAssignProfilesToGroup}
-                selectedGroupId={selectedGroupId}
-                selectedProfiles={selectedProfiles}
-                onSelectedProfilesChange={setSelectedProfiles}
-                onBulkDelete={handleBulkDelete}
-                onBulkGroupAssignment={handleBulkGroupAssignment}
-                onBulkProxyAssignment={handleBulkProxyAssignment}
-                onBulkCopyCookies={handleBulkCopyCookies}
-                onBulkRun={handleBulkRun}
-                onBulkStop={handleBulkStop}
-                bulkActionsUnlocked={automationUnlocked}
-                onBulkExtensionGroupAssignment={
-                  handleBulkExtensionGroupAssignment
+            <div className="flex min-h-0 flex-1 flex-col bg-background p-4">
+              <ProfilesToolbar
+                totalProfiles={filteredProfiles.length}
+                runningProfiles={
+                  filteredProfiles.filter((profile) =>
+                    runningProfiles.has(profile.id),
+                  ).length
                 }
-                onAssignExtensionGroup={handleAssignExtensionGroup}
-                onOpenProfileSyncDialog={handleOpenProfileSyncDialog}
-                onToggleProfileSync={handleToggleProfileSync}
-                crossOsUnlocked={crossOsUnlocked}
-                syncUnlocked={syncUnlocked}
-                getProfileSyncInfo={getProfileSyncInfo}
-                onLaunchWithSync={(profile) => {
-                  setSyncLeaderProfile(profile);
-                }}
+                profilesWithProxy={
+                  filteredProfiles.filter(
+                    (profile) => profile.proxy_id || profile.vpn_id,
+                  ).length
+                }
+                selectedCount={selectedProfiles.length}
+                onImport={() => handleRailNavigate("import")}
+                onManageGroups={() => handleRailNavigate("groups")}
+                onManageNetwork={() => handleRailNavigate("proxies")}
+                onRunSelected={handleBulkRun}
+                onStopSelected={handleBulkStop}
+                onDeleteSelected={handleBulkDelete}
               />
+              <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border border-border bg-card shadow-[0_2px_8px_rgba(24,32,51,0.04)]">
+                <ProfilesDataTable
+                  profiles={filteredProfiles}
+                  groups={groupsData}
+                  infoDialogProfile={profileInfoDialog}
+                  onInfoDialogProfileChange={setProfileInfoDialog}
+                  onLaunchProfile={launchProfile}
+                  onKillProfile={handleKillProfile}
+                  onCloneProfile={handleCloneProfile}
+                  onSetPassword={handleSetPassword}
+                  onChangePassword={handleChangePassword}
+                  onRemovePassword={handleRemovePassword}
+                  onDeleteProfile={handleDeleteProfile}
+                  onRenameProfile={handleRenameProfile}
+                  onConfigureWayfern={handleConfigureWayfern}
+                  onCopyCookiesToProfile={handleCopyCookiesToProfile}
+                  onOpenCookieManagement={handleOpenCookieManagement}
+                  runningProfiles={runningProfiles}
+                  isUpdating={isUpdating}
+                  onDeleteSelectedProfiles={handleDeleteSelectedProfiles}
+                  onAssignProfilesToGroup={handleAssignProfilesToGroup}
+                  selectedGroupId={selectedGroupId}
+                  selectedProfiles={selectedProfiles}
+                  onSelectedProfilesChange={setSelectedProfiles}
+                  onBulkDelete={handleBulkDelete}
+                  onBulkGroupAssignment={handleBulkGroupAssignment}
+                  onBulkProxyAssignment={handleBulkProxyAssignment}
+                  onBulkCopyCookies={handleBulkCopyCookies}
+                  onBulkRun={handleBulkRun}
+                  onBulkStop={handleBulkStop}
+                  bulkActionsUnlocked={automationUnlocked}
+                  onBulkExtensionGroupAssignment={
+                    handleBulkExtensionGroupAssignment
+                  }
+                  onAssignExtensionGroup={handleAssignExtensionGroup}
+                  onOpenProfileSyncDialog={handleOpenProfileSyncDialog}
+                  onToggleProfileSync={handleToggleProfileSync}
+                  crossOsUnlocked={crossOsUnlocked}
+                  syncUnlocked={syncUnlocked}
+                  getProfileSyncInfo={getProfileSyncInfo}
+                  onLaunchWithSync={(profile) => {
+                    setSyncLeaderProfile(profile);
+                  }}
+                />
+              </div>
             </div>
           )}
 

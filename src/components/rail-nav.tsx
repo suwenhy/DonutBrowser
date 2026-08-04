@@ -1,21 +1,20 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { FaDownload } from "react-icons/fa";
 import { FiWifi } from "react-icons/fi";
-import { GoGear, GoKebabHorizontal } from "react-icons/go";
+import { GoGear, GoPlus } from "react-icons/go";
 import {
   LuCloud,
   LuKeyboard,
   LuPlug,
   LuPuzzle,
-  LuUser,
+  LuUserRound,
   LuUsers,
 } from "react-icons/lu";
 import { cn } from "@/lib/utils";
 import { Logo } from "./icons/logo";
-import { Tooltip, TooltipContent, TooltipTrigger } from "./ui/tooltip";
+import { Button } from "./ui/button";
 
 export type AppPage =
   | "profiles"
@@ -29,439 +28,156 @@ export type AppPage =
   | "import"
   | "shortcuts";
 
-const CLICK_THRESHOLD = 5;
-const CLICK_WINDOW_MS = 2000;
-const GRAVITY = 2200;
-const BOUNCE_DAMPING = 0.6;
-const INITIAL_HORIZONTAL_SPEED = 350;
-const SPIN_SPEED = 720;
-const MIN_BOUNCE_VELOCITY = 60;
-const LOGO_HIDDEN_KEY = "donut-logo-hidden";
-
-function useLogoEasterEgg({
-  currentPage,
-  onNavigate,
-}: {
-  currentPage: AppPage;
-  onNavigate: (page: AppPage) => void;
-}) {
-  const clickTimestamps = useRef<number[]>([]);
-  const [isPressed, setIsPressed] = useState(false);
-  const [wobbleKey, setWobbleKey] = useState(0);
-  const [isFalling, setIsFalling] = useState(false);
-  /**
-   * Click count toward the bounce trigger while the user is on the profiles
-   * page. Capped at 4: each click here grows the logo by 25%, so step 4 has
-   * doubled the original size. Click 5 fires `triggerFall` and resets.
-   */
-  const [growStep, setGrowStep] = useState(0);
-  const resetTimeoutRef = useRef<number | null>(null);
-  const [isHidden, setIsHidden] = useState(() => {
-    try {
-      return sessionStorage.getItem(LOGO_HIDDEN_KEY) === "1";
-    } catch {
-      return false;
-    }
-  });
-  const logoRef = useRef<HTMLButtonElement>(null);
-  const animFrameRef = useRef<number>(0);
-
-  const triggerFall = useCallback(() => {
-    const el = logoRef.current;
-    if (!el || isFalling) return;
-    setIsFalling(true);
-
-    const rect = el.getBoundingClientRect();
-    const startX = rect.left;
-    const startY = rect.top;
-
-    const clone = el.cloneNode(true) as HTMLElement;
-    clone.style.position = "fixed";
-    clone.style.left = `${startX}px`;
-    clone.style.top = `${startY}px`;
-    clone.style.zIndex = "9999";
-    clone.style.pointerEvents = "none";
-    clone.style.margin = "0";
-    document.body.appendChild(clone);
-    el.style.visibility = "hidden";
-
-    let x = 0;
-    let y = 0;
-    let vy = -500;
-    // Roll right first, bounce off the right wall, then escape the left.
-    let vx = INITIAL_HORIZONTAL_SPEED;
-    let rotation = 0;
-    let lastTime = performance.now();
-
-    const animate = (time: number) => {
-      const dt = Math.min((time - lastTime) / 1000, 0.05);
-      lastTime = time;
-
-      // Read live so a mid-animation window resize moves the floor/wall.
-      const floorY = window.innerHeight;
-      const rightWall = window.innerWidth;
-
-      vy += GRAVITY * dt;
-      x += vx * dt;
-      y += vy * dt;
-      rotation += SPIN_SPEED * dt * (vx > 0 ? 1 : -1);
-
-      const currentBottom = startY + y + rect.height;
-      if (currentBottom >= floorY && vy > 0) {
-        y = floorY - startY - rect.height;
-        vy =
-          Math.abs(vy) > MIN_BOUNCE_VELOCITY
-            ? -Math.abs(vy) * BOUNCE_DAMPING
-            : -MIN_BOUNCE_VELOCITY * 3;
-      }
-
-      // Right-wall bounce: hit, reverse horizontal velocity (with a tiny
-      // damping), and keep rolling. Left wall has no bounce — the donut
-      // exits the window off the left edge.
-      const currentRight = startX + x + rect.width;
-      if (currentRight >= rightWall && vx > 0) {
-        x = rightWall - startX - rect.width;
-        vx = -Math.abs(vx) * 0.9;
-      }
-
-      clone.style.transform = `translate(${x}px, ${y}px) rotate(${rotation}deg)`;
-
-      const offScreenLeft = startX + x + rect.width < -200;
-      const offScreenBottom = startY + y > floorY + 100;
-      const offScreenTop = startY + y + rect.height < -200;
-
-      if (offScreenLeft || offScreenBottom || offScreenTop) {
-        clone.remove();
-        try {
-          sessionStorage.setItem(LOGO_HIDDEN_KEY, "1");
-        } catch {
-          // ignore — sessionStorage unavailable in some Tauri WebViews
-        }
-        setIsHidden(true);
-        setIsFalling(false);
-        return;
-      }
-      animFrameRef.current = requestAnimationFrame(animate);
-    };
-    animFrameRef.current = requestAnimationFrame(animate);
-  }, [isFalling]);
-
-  useEffect(() => {
-    return () => {
-      if (animFrameRef.current) cancelAnimationFrame(animFrameRef.current);
-    };
-  }, []);
-
-  const handleClick = useCallback(() => {
-    if (isFalling || isHidden) return;
-
-    // First behaviour: any click from elsewhere in the app just routes the
-    // user back to the profiles list. Growing the donut requires the user
-    // to already be home — that keeps the easter egg from accidentally
-    // firing during normal navigation.
-    if (currentPage !== "profiles") {
-      onNavigate("profiles");
-      clickTimestamps.current = [];
-      setGrowStep(0);
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current);
-        resetTimeoutRef.current = null;
-      }
-      return;
-    }
-
-    const now = Date.now();
-    clickTimestamps.current = clickTimestamps.current.filter(
-      (t) => now - t < CLICK_WINDOW_MS,
-    );
-    clickTimestamps.current.push(now);
-
-    if (clickTimestamps.current.length >= CLICK_THRESHOLD) {
-      clickTimestamps.current = [];
-      setGrowStep(0);
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current);
-        resetTimeoutRef.current = null;
-      }
-      triggerFall();
-    } else {
-      setGrowStep(
-        Math.min(clickTimestamps.current.length, CLICK_THRESHOLD - 1),
-      );
-      setWobbleKey((k) => k + 1);
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current);
-      }
-      resetTimeoutRef.current = window.setTimeout(() => {
-        clickTimestamps.current = [];
-        setGrowStep(0);
-        resetTimeoutRef.current = null;
-      }, CLICK_WINDOW_MS);
-    }
-  }, [currentPage, isFalling, isHidden, onNavigate, triggerFall]);
-
-  // Leaving the profiles page mid-streak cancels growth so we never end up
-  // with an outsized logo when the user returns later.
-  useEffect(() => {
-    if (currentPage !== "profiles") {
-      clickTimestamps.current = [];
-      setGrowStep(0);
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current);
-        resetTimeoutRef.current = null;
-      }
-    }
-  }, [currentPage]);
-
-  useEffect(() => {
-    return () => {
-      if (resetTimeoutRef.current !== null) {
-        window.clearTimeout(resetTimeoutRef.current);
-      }
-    };
-  }, []);
-
-  return {
-    logoRef,
-    isPressed,
-    setIsPressed,
-    wobbleKey,
-    isFalling,
-    isHidden,
-    growStep,
-    handleClick,
-  };
-}
-
 interface RailNavProps {
   currentPage: AppPage;
   onNavigate: (page: AppPage) => void;
+  onCreateProfile?: () => void;
 }
 
-interface RailItem {
+interface NavItem {
   page: AppPage;
   Icon: React.ComponentType<{ className?: string }>;
   labelKey: string;
 }
 
-const TOP_ITEMS: RailItem[] = [
-  { page: "profiles", Icon: LuUser, labelKey: "rail.profiles" },
+const BROWSER_ITEMS: NavItem[] = [
+  { page: "profiles", Icon: LuUserRound, labelKey: "rail.profiles" },
+  { page: "groups", Icon: LuUsers, labelKey: "rail.groups" },
   { page: "proxies", Icon: FiWifi, labelKey: "rail.network" },
   { page: "extensions", Icon: LuPuzzle, labelKey: "rail.extensions" },
-  { page: "groups", Icon: LuUsers, labelKey: "rail.groups" },
-  { page: "integrations", Icon: LuPlug, labelKey: "rail.integrations" },
-  { page: "account", Icon: LuCloud, labelKey: "rail.account" },
 ];
 
-interface MoreMenuItem {
-  page: AppPage;
-  Icon: React.ComponentType<{ className?: string }>;
-  labelKey: string;
-  hintKey: string;
-}
-
-const MORE_ITEMS: MoreMenuItem[] = [
-  {
-    page: "import",
-    Icon: FaDownload,
-    labelKey: "rail.more.importProfile",
-    hintKey: "rail.more.importProfileHint",
-  },
+const TOOL_ITEMS: NavItem[] = [
+  { page: "integrations", Icon: LuPlug, labelKey: "rail.integrations" },
+  { page: "import", Icon: FaDownload, labelKey: "rail.more.importProfile" },
   {
     page: "shortcuts",
     Icon: LuKeyboard,
     labelKey: "rail.more.keyboardShortcuts",
-    hintKey: "rail.more.keyboardShortcutsHint",
   },
 ];
 
-export function RailNav({ currentPage, onNavigate }: RailNavProps) {
+function NavSection({
+  label,
+  items,
+  currentPage,
+  onNavigate,
+}: {
+  label: string;
+  items: NavItem[];
+  currentPage: AppPage;
+  onNavigate: (page: AppPage) => void;
+}) {
   const { t } = useTranslation();
-  const [moreOpen, setMoreOpen] = useState(false);
-  const {
-    logoRef,
-    isPressed,
-    setIsPressed,
-    wobbleKey,
-    isFalling,
-    isHidden,
-    growStep,
-    handleClick,
-  } = useLogoEasterEgg({ currentPage, onNavigate });
 
   return (
-    <nav className="relative flex w-10 shrink-0 flex-col items-center gap-1 border-r border-border bg-background py-2">
-      {!isHidden ? (
-        <button
-          ref={logoRef}
-          type="button"
-          aria-label={t("header.donutLogo")}
-          className="grid size-7 shrink-0 cursor-pointer place-items-center rounded-md bg-transparent text-foreground select-none"
-          onClick={handleClick}
-          onPointerDown={() => {
-            setIsPressed(true);
-          }}
-          onPointerUp={() => {
-            setIsPressed(false);
-          }}
-          onPointerLeave={() => {
-            setIsPressed(false);
-          }}
-        >
-          {/* Inner wrapper survives clicks (no `key`) so the scale change
-              animates smoothly across the wiggle layer's remounts. */}
-          <span
-            style={{
-              transform: isPressed
-                ? `scale(${(1 + growStep * 0.25) * 0.9})`
-                : `scale(${1 + growStep * 0.25})`,
-            }}
-            className="inline-grid place-items-center transition-transform duration-300 ease-out will-change-transform"
+    <div className="space-y-1.5">
+      <div className="px-3 pb-1 text-[10px] font-semibold tracking-[0.14em] text-muted-foreground uppercase">
+        {label}
+      </div>
+      {items.map(({ page, Icon, labelKey }) => {
+        const active = currentPage === page;
+        return (
+          <button
+            key={page}
+            type="button"
+            onClick={() => onNavigate(page)}
+            aria-current={active ? "page" : undefined}
+            className={cn(
+              "relative flex h-10 w-full items-center gap-3 rounded-md px-3 text-left text-[13px] font-medium transition-[background-color,color,box-shadow]",
+              active
+                ? "bg-sidebar-accent text-sidebar-accent-foreground shadow-[inset_3px_0_0_var(--primary)]"
+                : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+            )}
           >
-            <span
-              key={wobbleKey}
-              className={cn(
-                "inline-grid place-items-center",
-                !isFalling &&
-                  !isPressed &&
-                  wobbleKey > 0 &&
-                  "animate-[wiggle_0.3s_ease-in-out]",
-              )}
-            >
-              <Logo className="size-5 will-change-transform" />
-            </span>
+            <Icon className="size-4 shrink-0" />
+            <span className="truncate">{t(labelKey)}</span>
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+export function RailNav({
+  currentPage,
+  onNavigate,
+  onCreateProfile,
+}: RailNavProps) {
+  const { t } = useTranslation();
+
+  return (
+    <nav className="flex w-56 shrink-0 flex-col border-r border-sidebar-border bg-sidebar px-3 py-3 text-sidebar-foreground">
+      <button
+        type="button"
+        className="mb-3 flex h-11 items-center gap-2.5 rounded-md px-2 text-left transition-colors hover:bg-sidebar-accent/50"
+        onClick={() => onNavigate("profiles")}
+      >
+        <span className="grid size-8 place-items-center rounded-lg bg-primary shadow-[0_4px_12px_rgba(47,107,255,0.22)]">
+          <Logo className="size-5 text-primary-foreground" />
+        </span>
+        <span className="min-w-0">
+          <span className="block truncate text-[15px] font-semibold text-sidebar-foreground">
+            {t("header.productName")}
           </span>
-        </button>
-      ) : (
-        <div className="size-7 shrink-0" />
-      )}
+          <span className="block text-[10px] text-muted-foreground">
+            {t("rail.localWorkspace")}
+          </span>
+        </span>
+      </button>
 
-      <div className="my-1 h-px w-5 shrink-0 bg-border" />
+      <Button
+        size="sm"
+        className="mb-6 h-10 w-full justify-start gap-2.5 px-3 text-[13px] shadow-[0_4px_12px_rgba(47,107,255,0.16)]"
+        onClick={onCreateProfile}
+      >
+        <GoPlus className="size-4" />
+        {t("header.newProfile")}
+      </Button>
 
-      <div className="flex min-h-0 w-full scrollbar-none flex-col items-center gap-1 overflow-y-auto [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
-        {TOP_ITEMS.map(({ page, Icon, labelKey }) => {
-          const active = currentPage === page;
-          return (
-            <Tooltip key={page} delayDuration={300}>
-              <TooltipTrigger asChild>
-                <button
-                  type="button"
-                  onClick={() => {
-                    onNavigate(page);
-                  }}
-                  aria-label={t(labelKey)}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "relative grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
-                    active
-                      ? "bg-accent text-foreground"
-                      : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
-                  )}
-                >
-                  {active && (
-                    <span
-                      aria-hidden="true"
-                      className="absolute inset-y-1.5 left-[-7px] w-[2px] rounded-full bg-foreground"
-                    />
-                  )}
-                  <Icon className="size-3.5" />
-                </button>
-              </TooltipTrigger>
-              <TooltipContent side="right">{t(labelKey)}</TooltipContent>
-            </Tooltip>
-          );
-        })}
+      <div className="min-h-0 flex-1 space-y-6 overflow-y-auto">
+        <NavSection
+          label={t("rail.sections.browser")}
+          items={BROWSER_ITEMS}
+          currentPage={currentPage}
+          onNavigate={onNavigate}
+        />
+        <NavSection
+          label={t("rail.sections.tools")}
+          items={TOOL_ITEMS}
+          currentPage={currentPage}
+          onNavigate={onNavigate}
+        />
       </div>
 
-      <div className="flex-1" />
-
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={() => {
-              setMoreOpen((v) => !v);
-            }}
-            aria-label={t("rail.more.label")}
-            aria-expanded={moreOpen}
-            className={cn(
-              "grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
-              moreOpen
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
-            )}
-          >
-            <GoKebabHorizontal className="size-3.5" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">{t("rail.more.label")}</TooltipContent>
-      </Tooltip>
-
-      <Tooltip delayDuration={300}>
-        <TooltipTrigger asChild>
-          <button
-            type="button"
-            onClick={() => {
-              onNavigate("settings");
-            }}
-            aria-label={t("rail.settings")}
-            aria-current={currentPage === "settings" ? "page" : undefined}
-            className={cn(
-              "relative grid size-7 shrink-0 cursor-pointer place-items-center rounded-md transition-colors duration-100",
-              currentPage === "settings"
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-card-foreground",
-            )}
-          >
-            {currentPage === "settings" && (
-              <span
-                aria-hidden="true"
-                className="absolute inset-y-1.5 left-[-7px] w-[2px] rounded-full bg-foreground"
-              />
-            )}
-            <GoGear className="size-3.5" />
-          </button>
-        </TooltipTrigger>
-        <TooltipContent side="right">{t("rail.settings")}</TooltipContent>
-      </Tooltip>
-
-      {moreOpen && (
-        <>
-          <button
-            type="button"
-            aria-label={t("rail.more.closeAriaLabel")}
-            className="fixed inset-0 z-30 cursor-default bg-transparent"
-            onClick={() => {
-              setMoreOpen(false);
-            }}
-          />
-          <div className="absolute bottom-14 left-11 z-40 w-56 animate-in rounded-lg border border-border bg-card p-1 shadow-2xl duration-100 fade-in-0 slide-in-from-bottom-1">
-            {MORE_ITEMS.map(({ page, Icon, labelKey, hintKey }) => (
-              <button
-                key={page}
-                type="button"
-                onClick={() => {
-                  setMoreOpen(false);
-                  onNavigate(page);
-                }}
-                className="flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-1.5 text-left transition-colors duration-100 hover:bg-accent"
-              >
-                <span className="grid size-5 shrink-0 place-items-center rounded bg-muted text-muted-foreground">
-                  <Icon className="size-3" />
-                </span>
-                <span className="flex min-w-0 flex-col">
-                  <span className="truncate text-xs font-medium text-foreground">
-                    {t(labelKey)}
-                  </span>
-                  <span className="truncate text-[10px] text-muted-foreground">
-                    {t(hintKey)}
-                  </span>
-                </span>
-              </button>
-            ))}
-          </div>
-        </>
-      )}
+      <div className="space-y-1.5 border-t border-sidebar-border pt-3">
+        <button
+          type="button"
+          onClick={() => onNavigate("account")}
+          className={cn(
+            "flex h-10 w-full items-center gap-3 rounded-md px-3 text-[13px] font-medium transition-colors",
+            currentPage === "account"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+          )}
+        >
+          <LuCloud className="size-4" />
+          {t("rail.account")}
+        </button>
+        <button
+          type="button"
+          onClick={() => onNavigate("settings")}
+          className={cn(
+            "flex h-10 w-full items-center gap-3 rounded-md px-3 text-[13px] font-medium transition-colors",
+            currentPage === "settings"
+              ? "bg-sidebar-accent text-sidebar-accent-foreground"
+              : "text-sidebar-foreground/75 hover:bg-sidebar-accent/60 hover:text-sidebar-foreground",
+          )}
+        >
+          <GoGear className="size-4" />
+          {t("rail.settings")}
+        </button>
+      </div>
     </nav>
   );
 }

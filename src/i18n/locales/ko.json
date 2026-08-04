@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "비밀번호로 보호된 프로필의 복호화된 RAM 사본을 실행 사이에 유지하여 시작 속도를 높입니다. 디스크의 사본은 그대로 암호화된 상태로 유지됩니다."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "프로필 검색...",
     "clearSearch": "검색 지우기",
     "moreActions": "더 많은 작업",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "프로필",
+    "stats": {
+      "total": "프로필 {{count}}개",
+      "running": "{{count}}개 실행 중",
+      "proxied": "{{count}}개 프록시 사용"
+    },
     "empty": "아직 프로필이 없습니다",
     "emptyDescription": "첫 번째 브라우저 프로필을 생성하여 시작하세요.",
     "createFirst": "프로필 생성",
     "noResults": "프로필을 찾을 수 없습니다",
     "noResultsDescription": "검색 조건과 일치하는 프로필이 없습니다.",
     "table": {
+      "id": "ID",
+      "platform": "플랫폼",
+      "neverOpened": "사용 안 함",
       "name": "이름",
       "browser": "브라우저",
       "status": "상태",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "브라우저 업데이트 중에는 프로필을 수정할 수 없습니다"
     },
     "actions": {
+      "open": "열기",
       "launch": "실행",
       "stop": "중지",
       "edit": "편집",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "일반",
+      "proxy": "프록시",
+      "fingerprint": "지문",
+      "advanced": "고급",
+      "overview": "프로필 개요",
+      "overviewDescription": "브라우저 ID의 실시간 요약입니다.",
+      "operatingSystem": "운영 체제",
+      "unnamed": "이름 없는 프로필",
+      "generatedAtLaunch": "실행 시 생성"
+    },
     "title": "새 프로필 생성",
     "configureTitle": "새 {{browser}} 프로필 생성",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "Wayfern 버전 {{requested}}은(는) 다운로드할 수 없습니다. 현재 버전은 {{current}}입니다."
   },
   "rail": {
+    "localWorkspace": "로컬 작업 공간",
+    "sections": {
+      "browser": "브라우저 관리",
+      "tools": "자동화 및 도구"
+    },
     "profiles": "프로필",
     "extensions": "확장 프로그램",
     "groups": "그룹",

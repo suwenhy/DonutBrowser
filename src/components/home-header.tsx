@@ -179,7 +179,7 @@ const HomeHeader = ({
       onPointerCancel={handlePointerEnd}
       onDoubleClick={handleDoubleClick}
       className={cn(
-        "flex h-11 items-center gap-2 border-b border-border bg-card pl-3 select-none",
+        "flex h-15 items-center gap-3 border-b border-border bg-card pl-4 shadow-[0_1px_0_rgba(24,32,51,0.02)] select-none",
         // Windows: WindowDragArea renders three 44px native-style controls
         // (minimize + maximize/restore + close) fixed at top-right with
         // z-50, total 132px wide. Reserve 144px on the right edge so the
@@ -202,13 +202,17 @@ const HomeHeader = ({
       )}
 
       {pageTitle ? (
-        <span className="ml-2 text-xs font-semibold text-card-foreground">
+        <span className="ml-2 text-[15px] font-semibold text-card-foreground">
           {pageTitle}
         </span>
-      ) : null}
+      ) : (
+        <span className="ml-2 shrink-0 text-[15px] font-semibold text-card-foreground">
+          {t("profiles.title")}
+        </span>
+      )}
 
       {showProfileToolbar && (
-        <div className="relative flex min-w-0 flex-1 items-center">
+        <div className="relative flex min-w-0 flex-1 items-center border-l border-border pl-3">
           {groupsFadeLeft && (
             <button
               type="button"
@@ -228,7 +232,7 @@ const HomeHeader = ({
           )}
           <div
             ref={groupsScrollRef}
-            className="ml-2 flex scrollbar-none items-center gap-3 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
+            className="flex scrollbar-none items-center gap-1.5 overflow-x-auto scroll-smooth [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden"
             style={{
               paddingLeft: groupsFadeLeft ? 22 : 0,
               paddingRight: groupsFadeRight ? 22 : 0,
@@ -245,14 +249,21 @@ const HomeHeader = ({
                     onGroupSelect(ALL_FILTER_ID);
                   }}
                   className={cn(
-                    "flex h-7 shrink-0 items-center gap-1.5 px-1 text-xs transition-colors duration-100",
+                    "flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs transition-colors duration-100",
                     active
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                   )}
                 >
                   <span>{t("groups.all")}</span>
-                  <span className="text-[11px] text-muted-foreground tabular-nums">
+                  <span
+                    className={cn(
+                      "text-[11px] tabular-nums",
+                      active
+                        ? "text-primary-foreground/75"
+                        : "text-muted-foreground",
+                    )}
+                  >
                     {totalProfiles}
                   </span>
                 </button>
@@ -269,14 +280,21 @@ const HomeHeader = ({
                     onGroupSelect(active ? ALL_FILTER_ID : group.id);
                   }}
                   className={cn(
-                    "flex h-7 shrink-0 items-center gap-1.5 px-1 text-xs transition-colors duration-100",
+                    "flex h-8 shrink-0 items-center gap-1.5 rounded-md px-2.5 text-xs transition-colors duration-100",
                     active
-                      ? "font-medium text-foreground"
-                      : "text-muted-foreground hover:text-foreground",
+                      ? "bg-primary text-primary-foreground shadow-xs"
+                      : "text-muted-foreground hover:bg-accent hover:text-accent-foreground",
                   )}
                 >
                   <span className="max-w-40 truncate">{group.name}</span>
-                  <span className="text-[11px] text-muted-foreground tabular-nums">
+                  <span
+                    className={cn(
+                      "text-[11px] tabular-nums",
+                      active
+                        ? "text-primary-foreground/75"
+                        : "text-muted-foreground",
+                    )}
+                  >
                     {group.count}
                   </span>
                 </button>
@@ -314,7 +332,7 @@ const HomeHeader = ({
             onChange={(e) => {
               onSearchQueryChange(e.target.value);
             }}
-            className="h-7 w-36 pr-7 pl-8 text-xs min-[860px]:w-52"
+            className="h-8 w-40 pr-7 pl-8 text-xs min-[860px]:w-56"
           />
           <LuSearch className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 transform text-muted-foreground" />
           {searchQuery ? (
@@ -342,7 +360,7 @@ const HomeHeader = ({
                 onClick={() => {
                   onCreateProfileDialogOpen(true);
                 }}
-                className="flex h-7 items-center gap-1.5 px-2.5 text-xs"
+                className="flex h-8 items-center gap-1.5 px-3 text-xs"
               >
                 <GoPlus className="size-3.5" />
                 {t("header.newProfile")}

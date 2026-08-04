@@ -175,8 +175,8 @@ function SubPageContent({
         height: "100%",
         maxHeight: "none",
         margin: 0,
-        padding: 12,
-        gap: 12,
+        padding: 20,
+        gap: 16,
         overflow: "auto",
         background: "var(--background)",
         containerType: "inline-size",
@@ -258,7 +258,7 @@ function DialogContent({
             // w-[calc(100%-2rem)] (not w-full + max-w) keeps the 1rem window
             // gutter even when callers override max-w-*: tailwind-merge drops
             // a base max-w in favor of the caller's, but leaves width alone.
-            "fixed top-[50%] left-[50%] z-10000 grid max-h-[calc(100vh-3rem)] w-[calc(100%-2rem)] max-w-lg -translate-[50%] gap-4 overflow-y-auto rounded-lg border bg-background p-6 shadow-lg",
+            "fixed top-[50%] left-[50%] z-10000 grid max-h-[calc(100vh-3rem)] w-[calc(100%-2rem)] max-w-lg -translate-[50%] gap-4 overflow-y-auto rounded-xl border border-border bg-card p-6 shadow-[0_24px_64px_rgba(24,32,51,0.18)]",
             className,
           )}
           {...props}

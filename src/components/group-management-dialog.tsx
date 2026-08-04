@@ -589,6 +589,33 @@ export function GroupManagementDialog({
               </RippleButton>
             </div>
 
+            <div className="grid shrink-0 grid-cols-3 gap-2">
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  {t("groups.title")}
+                </p>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {groups.length}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  {t("rail.profiles")}
+                </p>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {groups.reduce((total, group) => total + group.count, 0)}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  {t("groups.sync.enabled")}
+                </p>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {groups.filter((group) => group.sync_enabled).length}
+                </p>
+              </div>
+            </div>
+
             {error && (
               <div className="rounded-md bg-destructive/10 p-3 text-sm text-destructive">
                 {error}
@@ -607,7 +634,7 @@ export function GroupManagementDialog({
             ) : (
               <FadingScrollArea
                 className={cn(
-                  "min-h-0 flex-1",
+                  "min-h-0 flex-1 rounded-lg border border-border",
                   selectedGroupsForBulk.length > 0 && "pb-16",
                 )}
                 style={
@@ -620,7 +647,7 @@ export function GroupManagementDialog({
                   className="w-full table-fixed"
                   containerClassName="overflow-visible"
                 >
-                  <TableHeader className="sticky top-0 z-10 bg-background">
+                  <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur">
                     {table.getHeaderGroups().map((headerGroup) => (
                       <TableRow key={headerGroup.id}>
                         {headerGroup.headers.map((header) => (
@@ -652,6 +679,7 @@ export function GroupManagementDialog({
                       <TableRow
                         key={row.id}
                         data-state={row.getIsSelected() && "selected"}
+                        className="hover:bg-muted/40"
                       >
                         {row.getVisibleCells().map((cell) => (
                           <TableCell

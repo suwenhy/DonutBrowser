@@ -119,6 +119,7 @@ export function CreateProfileDialog({
     "browser-selection" | "browser-config"
   >("browser-config");
   const [activeTab, setActiveTab] = useState("anti-detect");
+  const [editorSection, setEditorSection] = useState("general");
 
   // Browser selection states. Defaults to Wayfern — the only creatable browser.
   const [selectedBrowser, setSelectedBrowser] =
@@ -467,6 +468,7 @@ export function CreateProfileDialog({
     setProfileName("");
     setCurrentStep("browser-config");
     setActiveTab("anti-detect");
+    setEditorSection("general");
     setSelectedBrowser("wayfern");
     setSelectedProxyId(undefined);
     setLaunchHook("");
@@ -526,8 +528,8 @@ export function CreateProfileDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="flex max-h-[90vh] max-w-[min(48rem,calc(100%-4rem))] flex-col">
-        <DialogHeader className="shrink-0">
+      <DialogContent className="flex h-[min(90vh,800px)] max-w-[min(76rem,calc(100%-3rem))] flex-col p-0">
+        <DialogHeader className="shrink-0 border-b border-border bg-card px-6 py-4">
           <DialogTitle>
             {currentStep === "browser-selection"
               ? t("createProfile.title")
@@ -545,8 +547,37 @@ export function CreateProfileDialog({
           {/* Tab list hidden - only anti-detect browsers are supported */}
 
           <ScrollArea className="flex-1 overflow-y-auto">
-            <div className="flex w-full flex-col items-center justify-center">
-              <div className="w-full space-y-6 py-4">
+            <div className="grid min-h-full grid-cols-[160px_minmax(0,1fr)_250px]">
+              <aside className="border-r border-border bg-muted/45 p-3">
+                <div className="space-y-1">
+                  {["general", "proxy", "fingerprint", "advanced"].map(
+                    (section) => (
+                      <button
+                        key={section}
+                        type="button"
+                        onClick={() => {
+                          setEditorSection(section);
+                          document
+                            .getElementById(`create-profile-${section}`)
+                            ?.scrollIntoView({
+                              behavior: "smooth",
+                              block: "start",
+                            });
+                        }}
+                        className={cn(
+                          "flex h-9 w-full items-center rounded-md px-3 text-left text-xs font-medium transition-colors",
+                          editorSection === section
+                            ? "bg-primary/10 text-primary"
+                            : "text-muted-foreground hover:bg-accent hover:text-foreground",
+                        )}
+                      >
+                        {t(`createProfile.editor.${section}`)}
+                      </button>
+                    ),
+                  )}
+                </div>
+              </aside>
+              <div className="w-full space-y-6 bg-card px-7 py-6">
                 {currentStep === "browser-selection" ? (
                   <>
                     <TabsContent value="anti-detect" className="mt-0 space-y-6">
@@ -643,7 +674,10 @@ export function CreateProfileDialog({
                       {/* Anti-Detect Configuration */}
                       <div className="space-y-6">
                         {/* Profile Name */}
-                        <div className="space-y-2">
+                        <div
+                          id="create-profile-general"
+                          className="scroll-mt-4 space-y-2"
+                        >
                           <Label htmlFor="profile-name">
                             {t("createProfile.profileName")}
                           </Label>
@@ -751,7 +785,10 @@ export function CreateProfileDialog({
 
                         {selectedBrowser === "wayfern" ? (
                           // Wayfern Configuration
-                          <div className="space-y-6">
+                          <div
+                            id="create-profile-fingerprint"
+                            className="scroll-mt-4 space-y-6"
+                          >
                             {/* Wayfern Download Status */}
                             {isLoadingReleaseTypes && (
                               <div className="flex items-center gap-3 rounded-md border p-3">
@@ -999,7 +1036,10 @@ export function CreateProfileDialog({
                         )}
 
                         {/* Proxy / VPN Selection - Always visible */}
-                        <div className="space-y-3">
+                        <div
+                          id="create-profile-proxy"
+                          className="scroll-mt-4 space-y-3"
+                        >
                           <div className="flex items-center justify-between">
                             <Label>{t("createProfile.proxy.title")}</Label>
                             <RippleButton
@@ -1148,7 +1188,10 @@ export function CreateProfileDialog({
                           )}
                         </div>
 
-                        <div className="space-y-2">
+                        <div
+                          id="create-profile-advanced"
+                          className="scroll-mt-4 space-y-2"
+                        >
                           <Label htmlFor="launch-hook-url">
                             {t("createProfile.launchHook.label")}
                           </Label>
@@ -1536,11 +1579,83 @@ export function CreateProfileDialog({
                   </>
                 )}
               </div>
+              <aside className="border-l border-border bg-muted/45 p-4">
+                <div className="sticky top-0 space-y-4">
+                  <div>
+                    <div className="text-sm font-semibold text-foreground">
+                      {t("createProfile.editor.overview")}
+                    </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {t("createProfile.editor.overviewDescription")}
+                    </p>
+                  </div>
+                  <div className="space-y-3 rounded-lg border border-border bg-card p-3">
+                    <div>
+                      <div className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                        {t("createProfile.profileName")}
+                      </div>
+                      <div className="mt-1 truncate text-xs font-medium text-foreground">
+                        {profileName || t("createProfile.editor.unnamed")}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                        {t("profiles.table.browser")}
+                      </div>
+                      <div className="mt-1 text-xs text-foreground">
+                        {t("createProfile.chromiumLabel")} ·{" "}
+                        {getCreatableVersion("wayfern")?.version ??
+                          t("common.labels.none")}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                        {t("createProfile.editor.operatingSystem")}
+                      </div>
+                      <div className="mt-1 text-xs capitalize text-foreground">
+                        {wayfernConfig.os ?? getCurrentOS()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                        {t("createProfile.proxy.title")}
+                      </div>
+                      <div className="mt-1 truncate text-xs text-foreground">
+                        {(() => {
+                          if (!selectedProxyId)
+                            return t("createProfile.proxy.noProxy");
+                          if (selectedProxyId.startsWith("vpn-")) {
+                            return (
+                              vpnConfigs.find(
+                                (vpn) => vpn.id === selectedProxyId.slice(4),
+                              )?.name ?? t("createProfile.proxy.noProxy")
+                            );
+                          }
+                          return (
+                            storedProxies.find(
+                              (proxy) => proxy.id === selectedProxyId,
+                            )?.name ?? t("createProfile.proxy.noProxy")
+                          );
+                        })()}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] font-medium tracking-wide text-muted-foreground uppercase">
+                        {t("createProfile.editor.fingerprint")}
+                      </div>
+                      <div className="mt-1 flex items-center gap-1.5 text-xs text-success">
+                        <span className="size-1.5 rounded-full bg-success" />
+                        {t("createProfile.editor.generatedAtLaunch")}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </aside>
             </div>
           </ScrollArea>
         </Tabs>
 
-        <DialogFooter className="shrink-0 border-t pt-4">
+        <DialogFooter className="shrink-0 border-t bg-card px-6 py-4">
           {currentStep === "browser-config" ? (
             <>
               <RippleButton variant="outline" onClick={handleClose}>

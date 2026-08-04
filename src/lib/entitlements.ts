@@ -9,13 +9,13 @@ interface Capabilities {
   teamCollaboration: boolean;
 }
 
-const NONE: Entitlements = {
+const LOCAL_CAPABILITIES: Entitlements = {
   active: false,
-  browserAutomation: false,
-  crossOsFingerprints: false,
+  browserAutomation: true,
+  crossOsFingerprints: true,
   cloudBackup: false,
   teamCollaboration: false,
-  profileLimit: 0,
+  profileLimit: Number.MAX_SAFE_INTEGER,
   requestsPerHour: 0,
 };
 
@@ -65,22 +65,37 @@ const DEFAULT_PAID: Capabilities = {
 export function getEntitlements(
   user: CloudUser | null | undefined,
 ): Entitlements {
-  if (user?.entitlements) return user.entitlements;
-  if (!user) return NONE;
+  if (!user) return LOCAL_CAPABILITIES;
 
-  const active =
-    user.plan !== "free" &&
-    (user.subscriptionStatus === "active" || user.planPeriod === "lifetime");
-  if (!active) return NONE;
+  const cloudEntitlements =
+    user.entitlements ??
+    (() => {
+      const active =
+        user.plan !== "free" &&
+        (user.subscriptionStatus === "active" ||
+          user.planPeriod === "lifetime");
+      if (!active) return LOCAL_CAPABILITIES;
 
-  const caps = PLAN_CAPABILITIES[user.plan] ?? DEFAULT_PAID;
+      const caps = PLAN_CAPABILITIES[user.plan] ?? DEFAULT_PAID;
+      return {
+        active: true,
+        browserAutomation: caps.browserAutomation,
+        crossOsFingerprints: caps.crossOsFingerprints,
+        cloudBackup: caps.cloudBackup,
+        teamCollaboration: caps.teamCollaboration,
+        profileLimit: user.profileLimit,
+        requestsPerHour: caps.browserAutomation ? DEFAULT_REQUESTS_PER_HOUR : 0,
+      };
+    })();
+
+  // Local capabilities belong to this open-source desktop build and do not
+  // depend on a Donut account. Only hosted backup/team capabilities continue
+  // to come from the authenticated cloud account.
   return {
-    active: true,
-    browserAutomation: caps.browserAutomation,
-    crossOsFingerprints: caps.crossOsFingerprints,
-    cloudBackup: caps.cloudBackup,
-    teamCollaboration: caps.teamCollaboration,
-    profileLimit: user.profileLimit,
-    requestsPerHour: caps.browserAutomation ? DEFAULT_REQUESTS_PER_HOUR : 0,
+    ...cloudEntitlements,
+    browserAutomation: true,
+    crossOsFingerprints: true,
+    profileLimit: Number.MAX_SAFE_INTEGER,
+    requestsPerHour: 0,
   };
 }

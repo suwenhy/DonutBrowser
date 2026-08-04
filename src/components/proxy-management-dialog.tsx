@@ -1101,6 +1101,33 @@ export function ProxyManagementDialog({
           )}
 
           <div className="@container flex min-h-0 w-full flex-1 flex-col">
+            <div className="mb-4 grid shrink-0 grid-cols-3 gap-2">
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  {t("proxies.management.tabProxies")}
+                </p>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {storedProxies.length}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  {t("proxies.management.tabVpns")}
+                </p>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {vpnConfigs.length}
+                </p>
+              </div>
+              <div className="rounded-lg border border-border bg-muted/30 px-3 py-2.5">
+                <p className="text-[10px] tracking-wide text-muted-foreground uppercase">
+                  {t("proxies.management.syncCol")}
+                </p>
+                <p className="mt-1 text-xl font-semibold tabular-nums">
+                  {storedProxies.filter((proxy) => proxy.sync_enabled).length +
+                    vpnConfigs.filter((vpn) => vpn.sync_enabled).length}
+                </p>
+              </div>
+            </div>
             <AnimatedTabs
               key={initialTab}
               defaultValue={initialTab}
@@ -1250,7 +1277,7 @@ export function ProxyManagementDialog({
                   ) : (
                     <FadingScrollArea
                       className={cn(
-                        "min-h-0 flex-1",
+                        "min-h-0 flex-1 rounded-lg border border-border",
                         selectedProxies.length > 0 && "pb-16",
                       )}
                       style={
@@ -1263,7 +1290,7 @@ export function ProxyManagementDialog({
                         className="w-full table-fixed"
                         containerClassName="overflow-visible"
                       >
-                        <TableHeader className="sticky top-0 z-10 bg-background">
+                        <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur">
                           {proxiesTable.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                               {headerGroup.headers.map((header) => (
@@ -1306,6 +1333,7 @@ export function ProxyManagementDialog({
                             <TableRow
                               key={row.id}
                               data-state={row.getIsSelected() && "selected"}
+                              className="hover:bg-muted/40"
                             >
                               {row.getVisibleCells().map((cell) => (
                                 <TableCell
@@ -1357,7 +1385,7 @@ export function ProxyManagementDialog({
                   ) : (
                     <FadingScrollArea
                       className={cn(
-                        "min-h-0 flex-1",
+                        "min-h-0 flex-1 rounded-lg border border-border",
                         selectedVpns.length > 0 && "pb-16",
                       )}
                       style={
@@ -1370,7 +1398,7 @@ export function ProxyManagementDialog({
                         className="w-full table-fixed"
                         containerClassName="overflow-visible"
                       >
-                        <TableHeader className="sticky top-0 z-10 bg-background">
+                        <TableHeader className="sticky top-0 z-10 bg-muted/70 backdrop-blur">
                           {vpnsTable.getHeaderGroups().map((headerGroup) => (
                             <TableRow key={headerGroup.id}>
                               {headerGroup.headers.map((header) => (
@@ -1413,6 +1441,7 @@ export function ProxyManagementDialog({
                             <TableRow
                               key={row.id}
                               data-state={row.getIsSelected() && "selected"}
+                              className="hover:bg-muted/40"
                             >
                               {row.getVisibleCells().map((cell) => (
                                 <TableCell

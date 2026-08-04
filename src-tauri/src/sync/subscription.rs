@@ -67,7 +67,28 @@ impl SyncSubscription {
     app_handle: &tauri::AppHandle,
     work_tx: mpsc::UnboundedSender<SyncWorkItem>,
   ) -> Result<Option<Self>, String> {
-    // Cloud auth takes priority
+    let manager = SettingsManager::instance();
+    let settings = manager
+      .load_settings()
+      .map_err(|e| format!("Failed to load settings: {e}"))?;
+
+    // Explicit self-hosted configuration takes priority over cloud login.
+    if let Some(server_url) = settings.sync_server_url {
+      let token = manager
+        .get_sync_token(app_handle)
+        .await
+        .map_err(|e| format!("Failed to get sync token: {e}"))?;
+      let Some(token) = token else {
+        return Ok(None);
+      };
+      return Ok(Some(Self::new(
+        server_url,
+        token,
+        TokenSource::SelfHosted,
+        work_tx,
+      )));
+    }
+
     if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await {
       let url = crate::cloud_auth::CLOUD_SYNC_URL.to_string();
       let token = crate::cloud_auth::CLOUD_AUTH
@@ -80,31 +101,7 @@ impl SyncSubscription {
       return Ok(Some(Self::new(url, token, TokenSource::Cloud, work_tx)));
     }
 
-    // Fall back to self-hosted settings
-    let manager = SettingsManager::instance();
-    let settings = manager
-      .load_settings()
-      .map_err(|e| format!("Failed to load settings: {e}"))?;
-
-    let Some(server_url) = settings.sync_server_url else {
-      return Ok(None);
-    };
-
-    let token = manager
-      .get_sync_token(app_handle)
-      .await
-      .map_err(|e| format!("Failed to get sync token: {e}"))?;
-
-    let Some(token) = token else {
-      return Ok(None);
-    };
-
-    Ok(Some(Self::new(
-      server_url,
-      token,
-      TokenSource::SelfHosted,
-      work_tx,
-    )))
+    Ok(None)
   }
 
   pub fn is_running(&self) -> bool {

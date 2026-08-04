@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "Giữ bản sao đã giải mã trong RAM của hồ sơ được bảo vệ bằng mật khẩu giữa các lần khởi chạy để khởi động nhanh hơn. Bản sao trên ổ đĩa vẫn được mã hóa."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "Tìm kiếm hồ sơ...",
     "clearSearch": "Xóa tìm kiếm",
     "moreActions": "Thêm thao tác",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "Hồ sơ",
+    "stats": {
+      "total": "{{count}} hồ sơ",
+      "running": "{{count}} đang chạy",
+      "proxied": "{{count}} dùng proxy"
+    },
     "empty": "Chưa có hồ sơ nào",
     "emptyDescription": "Tạo hồ sơ trình duyệt đầu tiên để bắt đầu.",
     "createFirst": "Tạo hồ sơ",
     "noResults": "Không tìm thấy hồ sơ",
     "noResultsDescription": "Không có hồ sơ nào khớp với tiêu chí tìm kiếm.",
     "table": {
+      "id": "ID",
+      "platform": "Nền tảng",
+      "neverOpened": "Chưa bao giờ",
       "name": "Tên",
       "browser": "Trình duyệt",
       "status": "Trạng thái",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "Không thể chỉnh sửa profile khi trình duyệt đang cập nhật"
     },
     "actions": {
+      "open": "Mở",
       "launch": "Khởi chạy",
       "stop": "Dừng",
       "edit": "Chỉnh sửa",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "Chung",
+      "proxy": "Proxy",
+      "fingerprint": "Dấu vân tay",
+      "advanced": "Nâng cao",
+      "overview": "Tổng quan hồ sơ",
+      "overviewDescription": "Tóm tắt trực tiếp về danh tính trình duyệt.",
+      "operatingSystem": "Hệ điều hành",
+      "unnamed": "Hồ sơ chưa đặt tên",
+      "generatedAtLaunch": "Tạo khi khởi chạy"
+    },
     "title": "Tạo hồ sơ mới",
     "configureTitle": "Tạo hồ sơ {{browser}} mới",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "Phiên bản Wayfern {{requested}} không có sẵn để tải xuống. Phiên bản hiện tại là {{current}}."
   },
   "rail": {
+    "localWorkspace": "Không gian làm việc cục bộ",
+    "sections": {
+      "browser": "Quản lý trình duyệt",
+      "tools": "Tự động hóa và công cụ"
+    },
     "profiles": "Profile",
     "extensions": "Tiện ích",
     "groups": "Nhóm",

@@ -94,6 +94,7 @@ import { cn } from "@/lib/utils";
 import type {
   BrowserProfile,
   ExtensionGroup,
+  GroupWithCount,
   LocationItem,
   ProxyCheckResult,
   StoredProxy,
@@ -176,6 +177,7 @@ interface TableMeta {
 
   // Extension groups (for Ext column lookup)
   extensionGroups: ExtensionGroup[];
+  groups: GroupWithCount[];
 
   // Click handlers for inline Ext / DNS cell editing
   onAssignExtensionGroup?: (profileIds: string[]) => void;
@@ -1122,6 +1124,7 @@ NoteCell.displayName = "NoteCell";
 
 interface ProfilesDataTableProps {
   profiles: BrowserProfile[];
+  groups: GroupWithCount[];
   onLaunchProfile: (profile: BrowserProfile) => void | Promise<void>;
   onKillProfile: (profile: BrowserProfile) => void | Promise<void>;
   onCloneProfile: (profile: BrowserProfile) => void | Promise<void>;
@@ -1172,6 +1175,7 @@ interface ProfilesDataTableProps {
 
 export function ProfilesDataTable({
   profiles,
+  groups,
   onLaunchProfile,
   onKillProfile,
   onCloneProfile,
@@ -1920,6 +1924,7 @@ export function ProfilesDataTable({
 
       // Extension groups
       extensionGroups,
+      groups,
       onAssignExtensionGroup,
       setDnsBlocklistProfile,
 
@@ -2015,6 +2020,7 @@ export function ProfilesDataTable({
       vpnOverrides,
       handleVpnSelection,
       extensionGroups,
+      groups,
       onAssignExtensionGroup,
       handleToggleAll,
       handleCheckboxChange,
@@ -2230,7 +2236,7 @@ export function ProfilesDataTable({
       },
       {
         id: "actions",
-        size: 48,
+        size: 92,
         cell: ({ row, table }) => {
           const meta = table.options.meta as TableMeta;
           const profile = row.original;
@@ -2354,7 +2360,7 @@ export function ProfilesDataTable({
                           : meta.t("profiles.actions.launch")
                       }
                       className={cn(
-                        "grid size-7 place-items-center p-0",
+                        "h-7 min-w-18 gap-1.5 rounded-md px-2.5 text-[11px] font-semibold",
                         !canLaunch && "cursor-not-allowed opacity-50",
                         canLaunch && "cursor-pointer",
                         isFollower && "border-accent",
@@ -2370,9 +2376,15 @@ export function ProfilesDataTable({
                       {isLaunching || isStopping ? (
                         <div className="size-3 animate-spin rounded-full border border-current border-t-transparent" />
                       ) : isRunning ? (
-                        <LuSquare className="size-3.5 fill-current" />
+                        <>
+                          <LuSquare className="size-3 fill-current" />
+                          {meta.t("profiles.actions.stop")}
+                        </>
                       ) : (
-                        <LuPlay className="size-3.5 fill-current" />
+                        <>
+                          <LuPlay className="size-3 fill-current" />
+                          {meta.t("profiles.actions.open")}
+                        </>
                       )}
                     </RippleButton>
                   </span>
@@ -2398,6 +2410,22 @@ export function ProfilesDataTable({
         sortingFn: "basic",
         header: () => null,
         cell: () => null,
+      },
+      {
+        id: "profile_id",
+        size: 82,
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          return meta.t("profiles.table.id");
+        },
+        cell: ({ row }) => (
+          <span
+            className="font-mono text-[10px] text-muted-foreground"
+            title={row.original.id}
+          >
+            {row.original.id.slice(0, 8)}
+          </span>
+        ),
       },
       {
         accessorKey: "name",
@@ -2582,6 +2610,63 @@ export function ProfilesDataTable({
                 </Tooltip>
               )}
             </div>
+          );
+        },
+      },
+      {
+        id: "group",
+        size: 100,
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          return meta.t("profiles.table.group");
+        },
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TableMeta;
+          const group = row.original.group_id
+            ? meta.groups.find((item) => item.id === row.original.group_id)
+            : undefined;
+          return (
+            <span className="block truncate text-xs text-muted-foreground">
+              {group?.name ?? meta.t("profiles.table.notSelected")}
+            </span>
+          );
+        },
+      },
+      {
+        id: "platform",
+        size: 92,
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          return meta.t("profiles.table.platform");
+        },
+        cell: ({ row }) => {
+          const profile = row.original;
+          const os = profile.wayfern_config?.os ?? profile.host_os ?? "unknown";
+          return (
+            <div className="min-w-0">
+              <div className="truncate text-xs">{getOSDisplayName(os)}</div>
+              <div className="truncate text-[10px] text-muted-foreground">
+                {getBrowserDisplayName(profile.browser)}
+              </div>
+            </div>
+          );
+        },
+      },
+      {
+        id: "last_launch",
+        size: 104,
+        header: ({ table }) => {
+          const meta = table.options.meta as TableMeta;
+          return meta.t("profiles.table.lastLaunch");
+        },
+        cell: ({ row, table }) => {
+          const meta = table.options.meta as TableMeta;
+          return (
+            <span className="text-[11px] text-muted-foreground">
+              {row.original.last_launch
+                ? formatRelativeTime(row.original.last_launch)
+                : meta.t("profiles.table.neverOpened")}
+            </span>
           );
         },
       },
@@ -2969,7 +3054,7 @@ export function ProfilesDataTable({
       },
       {
         id: "settings",
-        size: 32,
+        size: 58,
         cell: ({ row, table }) => {
           const meta = table.options.meta as TableMeta;
           const profile = row.original;
@@ -2978,7 +3063,8 @@ export function ProfilesDataTable({
             <div className="flex h-9 w-full items-center justify-end">
               <Button
                 variant="ghost"
-                className="size-7 p-0"
+                size="sm"
+                className="h-7 gap-1 px-2 text-[11px]"
                 disabled={!meta.isClient}
                 onClick={() => {
                   setProfileForInfoDialog(profile);
@@ -2987,7 +3073,8 @@ export function ProfilesDataTable({
                 <span className="sr-only">
                   {t("profiles.aria.profileInfo")}
                 </span>
-                <LuInfo className="size-4" />
+                <LuInfo className="size-3" />
+                {t("profiles.actions.edit")}
               </Button>
             </div>
           );
@@ -3063,6 +3150,10 @@ export function ProfilesDataTable({
         const next: VisibilityState = {
           // Always hidden — sort-only column.
           created_at: false,
+          profile_id: w >= 1080,
+          last_launch: w >= 980,
+          platform: w >= 900,
+          group: w >= 820,
           dns: w >= 768,
           ext: w >= 672,
           note: w >= 576,
@@ -3081,9 +3172,9 @@ export function ProfilesDataTable({
     };
   }, []);
 
-  // Compact 36px row from the redesign spec; estimateSize must match the
+  // Compact but readable row; estimateSize must match the
   // actual rendered row height or virtualizer placement drifts under scroll.
-  const ROW_HEIGHT = 36;
+  const ROW_HEIGHT = 42;
 
   const rowVirtualizer = useVirtualizer({
     count: sortedRows.length,
@@ -3114,19 +3205,19 @@ export function ProfilesDataTable({
           )}
           style={
             {
-              // Sticky table header is 32px tall (h-8); shift the top
+              // Sticky table header is 42px tall; shift the top
               // fade band below it so the header stays fully opaque and
               // only body rows fade as they scroll past.
-              "--scroll-fade-top-offset": "32px",
+              "--scroll-fade-top-offset": "42px",
             } as React.CSSProperties
           }
         >
           <Table className="table-fixed" containerClassName="overflow-visible">
-            <TableHeader className="sticky top-0 z-10 overflow-visible bg-background [&_tr]:border-0">
+            <TableHeader className="sticky top-0 z-10 overflow-visible bg-muted/80 backdrop-blur-sm">
               {table.getHeaderGroups().map((headerGroup) => (
                 <TableRow
                   key={headerGroup.id}
-                  className="overflow-visible border-0!"
+                  className="h-[42px] overflow-visible border-b border-border hover:bg-transparent"
                 >
                   {headerGroup.headers.map((header) => {
                     return (
@@ -3189,7 +3280,7 @@ export function ProfilesDataTable({
                         title={crossOsTitle}
                         style={{ height: `${ROW_HEIGHT}px` }}
                         className={cn(
-                          "overflow-visible border-0! hover:bg-accent/50",
+                          "overflow-visible border-b border-border/70 hover:bg-accent/55",
                           rowIsCrossOs && "opacity-60",
                         )}
                       >

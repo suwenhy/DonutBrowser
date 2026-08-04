@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "Сохранять расшифрованную копию защищённых паролем профилей в ОЗУ между запусками для ускорения старта. Копия на диске в любом случае остаётся зашифрованной."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "Поиск профилей...",
     "clearSearch": "Очистить поиск",
     "moreActions": "Дополнительные действия",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "Профили",
+    "stats": {
+      "total": "Профилей: {{count}}",
+      "running": "Запущено: {{count}}",
+      "proxied": "С прокси: {{count}}"
+    },
     "empty": "Профилей пока нет",
     "emptyDescription": "Создайте свой первый профиль браузера для начала работы.",
     "createFirst": "Создать профиль",
     "noResults": "Профили не найдены",
     "noResultsDescription": "Нет профилей, соответствующих критериям поиска.",
     "table": {
+      "id": "ID",
+      "platform": "Платформа",
+      "neverOpened": "Никогда",
       "name": "Название",
       "browser": "Браузер",
       "status": "Статус",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "Нельзя изменить профиль во время обновления браузера"
     },
     "actions": {
+      "open": "Открыть",
       "launch": "Запустить",
       "stop": "Остановить",
       "edit": "Редактировать",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "Основное",
+      "proxy": "Прокси",
+      "fingerprint": "Отпечаток",
+      "advanced": "Дополнительно",
+      "overview": "Обзор профиля",
+      "overviewDescription": "Актуальная сводка идентичности браузера.",
+      "operatingSystem": "Операционная система",
+      "unnamed": "Профиль без имени",
+      "generatedAtLaunch": "Создаётся при запуске"
+    },
     "title": "Создать новый профиль",
     "configureTitle": "Создать новый профиль {{browser}}",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "Версия Wayfern {{requested}} недоступна для загрузки. Текущая версия — {{current}}."
   },
   "rail": {
+    "localWorkspace": "Локальное пространство",
+    "sections": {
+      "browser": "Управление браузерами",
+      "tools": "Автоматизация и инструменты"
+    },
     "profiles": "Профили",
     "extensions": "Расширения",
     "groups": "Группы",

@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "Conservar la copia descifrada en RAM de los perfiles protegidos por contraseña entre lanzamientos para un inicio más rápido. La copia en disco permanece cifrada en cualquier caso."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "Buscar perfiles...",
     "clearSearch": "Limpiar búsqueda",
     "moreActions": "Más acciones",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "Perfiles",
+    "stats": {
+      "total": "{{count}} perfiles",
+      "running": "{{count}} en ejecución",
+      "proxied": "{{count}} con proxy"
+    },
     "empty": "Sin perfiles aún",
     "emptyDescription": "Crea tu primer perfil de navegador para comenzar.",
     "createFirst": "Crear Perfil",
     "noResults": "No se encontraron perfiles",
     "noResultsDescription": "Ningún perfil coincide con tus criterios de búsqueda.",
     "table": {
+      "id": "ID",
+      "platform": "Plataforma",
+      "neverOpened": "Nunca",
       "name": "Nombre",
       "browser": "Navegador",
       "status": "Estado",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "No se puede modificar el perfil mientras se actualiza el navegador"
     },
     "actions": {
+      "open": "Abrir",
       "launch": "Iniciar",
       "stop": "Detener",
       "edit": "Editar",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "General",
+      "proxy": "Proxy",
+      "fingerprint": "Huella digital",
+      "advanced": "Avanzado",
+      "overview": "Resumen del perfil",
+      "overviewDescription": "Resumen en vivo de la identidad del navegador.",
+      "operatingSystem": "Sistema operativo",
+      "unnamed": "Perfil sin nombre",
+      "generatedAtLaunch": "Generada al iniciar"
+    },
     "title": "Crear Nuevo Perfil",
     "configureTitle": "Crear Nuevo Perfil de {{browser}}",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "La versión {{requested}} de Wayfern no está disponible para descargar. La versión actual es {{current}}."
   },
   "rail": {
+    "localWorkspace": "Espacio de trabajo local",
+    "sections": {
+      "browser": "Gestión del navegador",
+      "tools": "Automatización y herramientas"
+    },
     "profiles": "Perfiles",
     "extensions": "Extensiones",
     "groups": "Grupos",

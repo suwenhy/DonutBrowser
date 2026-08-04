@@ -779,20 +779,13 @@ impl CloudAuthManager {
 
   /// Launch/drive profiles programmatically (local API + MCP automation).
   pub async fn can_use_browser_automation(&self) -> bool {
-    self
-      .entitlements()
-      .await
-      .map(|e| e.browser_automation)
-      .unwrap_or(false)
+    true
   }
 
-  /// Edit fingerprints / use a non-native OS fingerprint.
+  /// Edit locally stored fingerprint configuration. This is a local desktop
+  /// capability and does not require a Donut cloud account.
   pub async fn can_use_cross_os_fingerprints(&self) -> bool {
-    self
-      .entitlements()
-      .await
-      .map(|e| e.cross_os_fingerprints)
-      .unwrap_or(false)
+    true
   }
 
   /// Cloud profile sync / backup (async).
@@ -818,11 +811,7 @@ impl CloudAuthManager {
   /// Per-hour cap on automation requests (0 when automation is unavailable).
   /// Carried for the future local rate limiter; read by the inert chokepoints.
   pub async fn requests_per_hour(&self) -> i64 {
-    self
-      .entitlements()
-      .await
-      .map(|e| e.requests_per_hour)
-      .unwrap_or(0)
+    0
   }
 
   pub async fn is_fingerprint_os_allowed(&self, fingerprint_os: Option<&str>) -> bool {

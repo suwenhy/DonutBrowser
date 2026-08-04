@@ -46,13 +46,7 @@ export function AccountPage({
   onOpenSignIn,
 }: AccountPageProps) {
   const { t } = useTranslation();
-  const {
-    user,
-    isLoggedIn,
-    isLoading: isCloudLoading,
-    logout,
-    refreshProfile,
-  } = useCloudAuth();
+  const { user, isLoggedIn, logout, refreshProfile } = useCloudAuth();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -68,12 +62,7 @@ export function AccountPage({
     useState<ConnectionStatus>("unknown");
 
   const hasConfig = Boolean(serverUrl && token);
-  // Self-hosted and cloud are mutually exclusive — both share the same sync
-  // engine and a profile can't be sync'd to two backends. The tab trigger is
-  // disabled here AND the backend rejects mixed state (see `save_sync_settings`
-  // / `cloud_logout`), so even if someone bypasses the UI we don't end up
-  // with split-brain.
-  const selfHostedDisabled = isLoggedIn || isCloudLoading;
+  const selfHostedDisabled = false;
 
   const handleRefresh = async () => {
     setIsRefreshing(true);
@@ -366,11 +355,6 @@ export function AccountPage({
 
             <AnimatedTabsContent value="self-hosted" className="mt-4">
               {selfHostedDisabled ? (
-                // Defensive: the tab trigger is disabled while the user is
-                // logged in, so this branch shouldn't be reachable via UI —
-                // but if state flips mid-render (e.g. a cloud login finishes
-                // while the tab is open), show the explanation instead of
-                // a silent empty card.
                 <p className="text-sm text-muted-foreground">
                   {t("account.selfHosted.disabledWhileLoggedIn")}
                 </p>

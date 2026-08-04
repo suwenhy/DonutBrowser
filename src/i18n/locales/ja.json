@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "起動を高速化するため、パスワード保護されたプロファイルの復号済みコピーをRAMに保持します。ディスク上のコピーは常に暗号化されたままです。"
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "プロファイルを検索...",
     "clearSearch": "検索をクリア",
     "moreActions": "その他のアクション",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "プロファイル",
+    "stats": {
+      "total": "{{count}}件のプロファイル",
+      "running": "{{count}}件実行中",
+      "proxied": "{{count}}件プロキシ使用"
+    },
     "empty": "プロファイルがありません",
     "emptyDescription": "最初のブラウザプロファイルを作成して始めましょう。",
     "createFirst": "プロファイルを作成",
     "noResults": "プロファイルが見つかりません",
     "noResultsDescription": "検索条件に一致するプロファイルがありません。",
     "table": {
+      "id": "ID",
+      "platform": "プラットフォーム",
+      "neverOpened": "未使用",
       "name": "名前",
       "browser": "ブラウザ",
       "status": "ステータス",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "ブラウザの更新中はプロファイルを変更できません"
     },
     "actions": {
+      "open": "開く",
       "launch": "起動",
       "stop": "停止",
       "edit": "編集",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "一般",
+      "proxy": "プロキシ",
+      "fingerprint": "フィンガープリント",
+      "advanced": "詳細",
+      "overview": "プロファイル概要",
+      "overviewDescription": "ブラウザ識別情報のリアルタイム概要です。",
+      "operatingSystem": "オペレーティングシステム",
+      "unnamed": "名称未設定のプロファイル",
+      "generatedAtLaunch": "起動時に生成"
+    },
     "title": "新しいプロファイルを作成",
     "configureTitle": "新しい{{browser}}プロファイルを作成",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "Wayfernのバージョン{{requested}}はダウンロードできません。現在のバージョンは{{current}}です。"
   },
   "rail": {
+    "localWorkspace": "ローカルワークスペース",
+    "sections": {
+      "browser": "ブラウザ管理",
+      "tools": "自動化とツール"
+    },
     "profiles": "プロファイル",
     "extensions": "拡張機能",
     "groups": "グループ",

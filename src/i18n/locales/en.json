@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "Preserve the decrypted in-RAM copy of password-protected profiles between launches for faster startup. The on-disk copy stays encrypted regardless."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "Search profiles...",
     "clearSearch": "Clear search",
     "moreActions": "More actions",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "Profiles",
+    "stats": {
+      "total": "{{count}} profiles",
+      "running": "{{count}} running",
+      "proxied": "{{count}} with proxy"
+    },
     "empty": "No profiles yet",
     "emptyDescription": "Create your first browser profile to get started.",
     "createFirst": "Create Profile",
     "noResults": "No profiles found",
     "noResultsDescription": "No profiles match your search criteria.",
     "table": {
+      "id": "ID",
+      "platform": "Platform",
+      "neverOpened": "Never",
       "name": "Name",
       "browser": "Browser",
       "status": "Status",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "Can't modify profile while browser is updating"
     },
     "actions": {
+      "open": "Open",
       "launch": "Launch",
       "stop": "Stop",
       "edit": "Edit",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "General",
+      "proxy": "Proxy",
+      "fingerprint": "Fingerprint",
+      "advanced": "Advanced",
+      "overview": "Profile overview",
+      "overviewDescription": "A live summary of the browser identity.",
+      "operatingSystem": "Operating system",
+      "unnamed": "Unnamed profile",
+      "generatedAtLaunch": "Generated at launch"
+    },
     "title": "Create New Profile",
     "configureTitle": "Create New {{browser}} Profile",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "Wayfern version {{requested}} is not available for download. The current version is {{current}}."
   },
   "rail": {
+    "localWorkspace": "Local workspace",
+    "sections": {
+      "browser": "Browser management",
+      "tools": "Automation & tools"
+    },
     "profiles": "Profiles",
     "extensions": "Extensions",
     "groups": "Groups",

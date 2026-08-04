@@ -200,6 +200,7 @@
     "keepDecryptedProfilesInRamDescription": "Preserva a cópia descriptografada na RAM dos perfis protegidos por senha entre execuções para um início mais rápido. A cópia em disco permanece criptografada em qualquer caso."
   },
   "header": {
+    "productName": "Donut Browser",
     "searchPlaceholder": "Pesquisar perfis...",
     "clearSearch": "Limpar pesquisa",
     "moreActions": "Mais ações",
@@ -220,12 +221,20 @@
   },
   "profiles": {
     "title": "Perfis",
+    "stats": {
+      "total": "{{count}} perfis",
+      "running": "{{count}} em execução",
+      "proxied": "{{count}} com proxy"
+    },
     "empty": "Nenhum perfil ainda",
     "emptyDescription": "Crie seu primeiro perfil de navegador para começar.",
     "createFirst": "Criar Perfil",
     "noResults": "Nenhum perfil encontrado",
     "noResultsDescription": "Nenhum perfil corresponde aos seus critérios de pesquisa.",
     "table": {
+      "id": "ID",
+      "platform": "Plataforma",
+      "neverOpened": "Nunca",
       "name": "Nome",
       "browser": "Navegador",
       "status": "Status",
@@ -248,6 +257,7 @@
       "cantModifyUpdating": "Não é possível modificar o perfil enquanto o navegador é atualizado"
     },
     "actions": {
+      "open": "Abrir",
       "launch": "Iniciar",
       "stop": "Parar",
       "edit": "Editar",
@@ -334,6 +344,17 @@
     }
   },
   "createProfile": {
+    "editor": {
+      "general": "Geral",
+      "proxy": "Proxy",
+      "fingerprint": "Impressão digital",
+      "advanced": "Avançado",
+      "overview": "Visão geral do perfil",
+      "overviewDescription": "Resumo em tempo real da identidade do navegador.",
+      "operatingSystem": "Sistema operacional",
+      "unnamed": "Perfil sem nome",
+      "generatedAtLaunch": "Gerada ao iniciar"
+    },
     "title": "Criar Novo Perfil",
     "configureTitle": "Criar Novo Perfil de {{browser}}",
     "antiDetect": {
@@ -1805,6 +1826,11 @@
     "wayfernVersionNotAvailable": "A versão {{requested}} do Wayfern não está disponível para download. A versão atual é {{current}}."
   },
   "rail": {
+    "localWorkspace": "Espaço de trabalho local",
+    "sections": {
+      "browser": "Gestão do navegador",
+      "tools": "Automação e ferramentas"
+    },
     "profiles": "Perfis",
     "extensions": "Extensões",
     "groups": "Grupos",

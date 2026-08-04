@@ -17,7 +17,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { ProBadge } from "@/components/ui/pro-badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
@@ -124,10 +123,10 @@ export function SyncConfigDialog({
   // Auto-select the appropriate tab based on connection state
   useEffect(() => {
     if (isCloudLoading) return;
-    if (isLoggedIn) {
-      setActiveTab("cloud");
-    } else if (serverUrl && token) {
+    if (serverUrl && token) {
       setActiveTab("self-hosted");
+    } else if (isLoggedIn) {
+      setActiveTab("cloud");
     } else {
       setActiveTab("cloud");
     }
@@ -236,7 +235,7 @@ export function SyncConfigDialog({
   }, [logout, t]);
 
   const cloudBlocked = !isLoggedIn && hasConfig;
-  const selfHostedBlocked = isLoggedIn;
+  const selfHostedBlocked = false;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -246,7 +245,7 @@ export function SyncConfigDialog({
           <DialogDescription>{t("sync.description")}</DialogDescription>
         </DialogHeader>
 
-        {isLoggedIn && user ? (
+        {isLoggedIn && user && activeTab === "cloud" ? (
           <div className="grid gap-4 py-4">
             <div className="flex items-center gap-2 text-sm">
               <div className="size-2 rounded-full bg-success" />
@@ -308,6 +307,13 @@ export function SyncConfigDialog({
             </div>
 
             <div className="flex gap-2 pt-2">
+              <Button
+                variant="outline"
+                className="flex-1"
+                onClick={() => setActiveTab("self-hosted")}
+              >
+                {t("sync.cloud.selfHostedTabLabel")}
+              </Button>
               <Button variant="outline" className="flex-1" asChild>
                 <a
                   href="https://donutbrowser.com/account"
@@ -334,20 +340,14 @@ export function SyncConfigDialog({
                 className="flex-1"
                 disabled={cloudBlocked}
               >
-                <span className="flex items-center gap-2">
-                  {t("sync.cloud.tabLabel")}
-                  {cloudBlocked && <ProBadge />}
-                </span>
+                {t("sync.cloud.tabLabel")}
               </TabsTrigger>
               <TabsTrigger
                 value="self-hosted"
                 className="flex-1"
                 disabled={selfHostedBlocked}
               >
-                <span className="flex items-center gap-2">
-                  {t("sync.cloud.selfHostedTabLabel")}
-                  {selfHostedBlocked && <ProBadge />}
-                </span>
+                {t("sync.cloud.selfHostedTabLabel")}
               </TabsTrigger>
             </TabsList>
 

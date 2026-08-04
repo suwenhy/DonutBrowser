@@ -337,7 +337,21 @@ impl SyncEngine {
   }
 
   pub async fn create_from_settings(app_handle: &tauri::AppHandle) -> Result<Self, String> {
-    // Cloud auth takes priority
+    let manager = SettingsManager::instance();
+    let settings = manager
+      .load_settings()
+      .map_err(|e| format!("Failed to load settings: {e}"))?;
+
+    // Explicit self-hosted configuration takes priority over cloud login.
+    if let Some(server_url) = settings.sync_server_url {
+      let token = manager
+        .get_sync_token(app_handle)
+        .await
+        .map_err(|e| format!("Failed to get sync token: {e}"))?
+        .ok_or_else(|| "Sync token not configured".to_string())?;
+      return Ok(Self::new(server_url, token));
+    }
+
     if crate::cloud_auth::CLOUD_AUTH.is_logged_in().await {
       let url = crate::cloud_auth::CLOUD_SYNC_URL.to_string();
       let token = crate::cloud_auth::CLOUD_AUTH
@@ -348,23 +362,7 @@ impl SyncEngine {
       return Ok(Self::new(url, token));
     }
 
-    // Fall back to self-hosted settings
-    let manager = SettingsManager::instance();
-    let settings = manager
-      .load_settings()
-      .map_err(|e| format!("Failed to load settings: {e}"))?;
-
-    let server_url = settings
-      .sync_server_url
-      .ok_or_else(|| "Sync server URL not configured".to_string())?;
-
-    let token = manager
-      .get_sync_token(app_handle)
-      .await
-      .map_err(|e| format!("Failed to get sync token: {e}"))?
-      .ok_or_else(|| "Sync token not configured".to_string())?;
-
-    Ok(Self::new(server_url, token))
+    Err("Sync server URL not configured".to_string())
   }
 
   /// Get the key prefix for team profiles. Returns empty string for personal profiles.
@@ -379,9 +377,13 @@ impl SyncEngine {
     String::new()
   }
 
-  /// Check if this is a self-hosted sync (no cloud login).
+  /// Check if this engine is configured to use an explicit self-hosted server.
   async fn is_self_hosted_sync() -> bool {
-    !crate::cloud_auth::CLOUD_AUTH.is_logged_in().await
+    SettingsManager::instance()
+      .load_settings()
+      .ok()
+      .and_then(|settings| settings.sync_server_url)
+      .is_some()
   }
 
   /// Resolve a remote config object's user-edit timestamp (`updated_at`) for
